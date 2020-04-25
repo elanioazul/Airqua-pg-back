@@ -1,0 +1,30 @@
+{
+  "name": "airqua-express-pg-babel",
+  "version": "1.0.0",
+  "description": "airqua with PostgreSQL & Nodejs REST API, and babel for ECMA6 modules importation",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js --exec babel-node",
+    "build": "babel src --out-dir dist",
+    "start": "node dist/index.js"
+  },
+  "author": "hhc",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/polyfill": "^7.8.7",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "moment": "^2.24.0",
+    "pg": "^8.0.3",
+    "pg-hstore": "^2.3.3"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.0",
+    "@babel/node": "^7.8.7",
+    "@babel/preset-env": "^7.9.5",
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.3"
+  }
+}
