@@ -4,6 +4,7 @@ import cors from 'cors'
 
 //IMPOTING ROUTES
 import usersRoutes from './routes/users.routes';
+import dataCollected from './routes/dataCollected.routes'
 import airStations from './routes/stationsAir.routes';
 import meteoStations from './routes/stationsMeteo.routes';
 import airData from './routes/dataAir.routes';
@@ -28,9 +29,13 @@ app.use(express.urlencoded({extended : false}));
 
 
 //ROUTES DEFINITION
-app.use('/api/v1/users', usersRoutes)
+app.use('/api/v1/users', usersRoutes);
+
+app.use('/api/v1/datacollected', dataCollected);
+
 app.use('/api/v1/airstations', airStations);
 app.use('/api/v1/meteostations', meteoStations);
+
 app.use('/api/v1/airdata', airData);
 app.use('/api/v1/meteodata', meteoData);
 

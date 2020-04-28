@@ -1,6 +1,6 @@
 import pool from '../database/pool'
 
-
+//para tener datos con los que pintar en el grafico
 export async function getMeteoDataByStation(req, res) {
     const station = req.params.stationid;
     const { magnitud, ano, mes, dia } = req.body;

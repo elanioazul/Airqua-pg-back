@@ -1,7 +1,7 @@
 import pool from '../database/pool'
 
-//para poblar con info el pop-up big
 
+//para tener datos con los que pintar en el grafico
 export async function getAirDataByStation(req, res) {
     const station = req.params.stationid;
     const { magnitud, ano, mes, dia } = req.body;

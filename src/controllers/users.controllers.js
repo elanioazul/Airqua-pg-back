@@ -22,7 +22,7 @@ export async function createUser(req, res) {
             'INSERT INTO users (email, username, initials, password) VALUES ($1, $2, $3, $4)',
              [email, username, initials, password]
         );
-        console.log(response, response2);
+        console.log(response);
         res.json({
             message: 'created successfully',
             body: {
