@@ -1,3 +1,4 @@
+
 --https://x-team.com/blog/automatic-timestamps-with-postgresql/
 
 --creacion dela funcion que actuara en el trigger para que cada vez que se registre una modificacion se registre la hora
@@ -71,9 +72,14 @@ INSERT INTO datacollected (usernameid, name, ppm, description, lon, lat)
 VALUES (14, 'cv-10', 142, 'desprotegido', -3.711412, 40.457549) RETURNING *
 
 
---query para obtener todas los valores de un dia
-SELECT h01, h02, h03, h04, h05, h06, h07, h08, h09, h10, h11, h12, h13, h14, h15, h16, h17, h18, h19, h20, h21, h22, h23, h24 FROM air
-WHERE estacion = {} AND magnitud = {} AND ano = {} AND mes = {} AND dia = {}
+
+
+Tal vez haya que hacer que por cada usuario que haya en la tabla usuario, se cree una tabla "data_to_colect".
+AL final her tirado por un modelo de una tabla con todos los datos recogidos por todos los users.
+
+-----------------------------------
+--MADRID air / meteo
+----------------------------------
 
 --creacion de primary key
 ALTER TABLE airstations
@@ -99,12 +105,6 @@ ALTER TABLE air_magnitudes
   ADD CONSTRAINT airmagnitud_id 
     PRIMARY KEY (magnitud);
 
-Tal vez haya que hacer que por cada usuario que haya en la tabla usuario, se cree una tabla "data_to_colect".
-AL final her tirado por un modelo de una tabla con todos los datos recogidos por todos los users.
-
-
---madrid air / meteo
-
 --addding foreign keys
 ALTER TABLE air
 ADD CONSTRAINT magnitud_fk FOREIGN KEY (magnitud) REFERENCES air_magnitudes (magnitud)
@@ -117,3 +117,69 @@ ADD CONSTRAINT magnitud_fk FOREIGN KEY (magnitud) REFERENCES meteo_magnitudes (m
 
 ALTER TABLE meteo
 ADD CONSTRAINT estacion_fk FOREIGN KEY (estacion) REFERENCES meteostations (codigo_cor)
+
+
+
+--borro primary key y clave foraneas de air y meteo con CASCADE:
+ALTER TABLE airstations DROP CONSTRAINT codigo_cor_id CASCADE;
+ALTER TABLE air_magnitudes DROP CONSTRAINT airmagnitud_id CASCADE; 
+ALTER TABLE meteostations DROP CONSTRAINT codigo_cor_pk CASCADE;
+ALTER TABLE meteo_magnitudes DROP CONSTRAINT magnitud_id CASCADE; 
+--ahora cambio el double precision de codigo_cor a integer. 
+--No me dejaba siendo PK, por eso las borre.
+ALTER TABLE airstations
+  ALTER COLUMN codigo_cor TYPE INT USING codigo_cor::integer,
+  ALTER COLUMN altitud TYPE INT USING altitud::integer
+  
+ALTER TABLE air_magnitudes
+  ALTER COLUMN magnitud TYPE INT USING magnitud::integer
+
+ALTER TABLE air
+  ALTER COLUMN estacion TYPE INT USING estacion::integer,
+  ALTER COLUMN magnitud TYPE INT USING magnitud::integer
+
+ALTER TABLE meteostations
+  ALTER COLUMN codigo_cor TYPE INT USING codigo_cor::integer,
+  ALTER COLUMN altitud TYPE INT USING altitud::integer
+
+ALTER TABLE meteo_magnitudes
+  ALTER COLUMN magnitud TYPE INT USING magnitud::integer
+
+ALTER TABLE meteo
+  ALTER COLUMN estacion TYPE INT USING estacion::integer,
+  ALTER COLUMN magnitud TYPE INT USING magnitud::integer
+
+--nueva pk´s en ambas tablas padre:
+ALTER TABLE airstations 
+  ADD CONSTRAINT estacion_pk 
+  PRIMARY KEY (codigo_cor);
+
+ALTER TABLE air_magnitudes
+  ADD CONSTRAINT magnitud_pk 
+  PRIMARY KEY (magnitud);
+
+ALTER TABLE meteostations 
+  ADD CONSTRAINT meteoestacion_pk 
+  PRIMARY KEY (codigo_cor);
+
+ALTER TABLE meteo_magnitudes
+  ADD CONSTRAINT meteomagnitud_pk 
+  PRIMARY KEY (magnitud);
+
+--nueva definición de foreign keys en tabla hija air y meteo
+ALTER TABLE air
+ADD CONSTRAINT magnitud_id FOREIGN KEY (magnitud) REFERENCES air_magnitudes (magnitud)
+
+ALTER TABLE air
+ADD CONSTRAINT estacion_id FOREIGN KEY (estacion) REFERENCES airstations (codigo_cor)
+
+ALTER TABLE meteo
+ADD CONSTRAINT magnitud_id FOREIGN KEY (magnitud) REFERENCES meteo_magnitudes (magnitud)
+
+ALTER TABLE meteo
+ADD CONSTRAINT estacion_id FOREIGN KEY (estacion) REFERENCES meteostations (codigo_cor)
+
+
+--query para obtener todas los valores de un dia
+SELECT h01, h02, h03, h04, h05, h06, h07, h08, h09, h10, h11, h12, h13, h14, h15, h16, h17, h18, h19, h20, h21, h22, h23, h24 FROM air
+WHERE estacion = {} AND magnitud = {} AND ano = {} AND mes = {} AND dia = {}
