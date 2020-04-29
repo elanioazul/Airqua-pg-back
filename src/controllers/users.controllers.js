@@ -1,5 +1,18 @@
 import pool from '../database/pool'
+import {
+    hashPassword,
+    comparePassword,
+    isValidEmail,
+    validatePassword,
+    isEmpty,
+    generateUserToken
+} from '../helpers/validations'
 
+import {
+    errorMessage,
+    successMessage,
+    status
+} from '../helpers/status'
 
 
 export async function getUsers(req, res) {
@@ -41,8 +54,7 @@ export async function createUser(req, res) {
 export async function updateUser(req, res) {
     const id = req.params.id;
     const { email, username, initials, password } = req.body;
-    //console.log(id, name, email);
-    //res.send('User updated')
+
     const response = await pool.query('UPDATE users SET email = $1, username = $2, initials = $3, password = $4 WHERE id = $5', [
         email,
         username,
