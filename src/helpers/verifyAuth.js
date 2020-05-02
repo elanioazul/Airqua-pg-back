@@ -22,11 +22,13 @@ dotenv.config();
       return res.status(status.bad).send(errorMessage);
     }
     try {
+      //jwt.verify() will verify the users token when a protected route is accessed.
       const decoded =  jwt.verify(token, process.env.SECRET);
+      //If the user exists in the DB, we created a new object property in the req object. 
+      //We will use this to process other requests handler.
       req.user = {
         email: decoded.email,
         user_id: decoded.user_id,
-        is_admin: decoded.is_admin,
         username: decoded.username
       };
       next();
