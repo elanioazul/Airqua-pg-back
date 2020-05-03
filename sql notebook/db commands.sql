@@ -187,3 +187,6 @@ WHERE estacion = {} AND magnitud = {} AND ano = {} AND mes = {} AND dia = {}
 
 --add unique constraints
 ALTER TABLE users ADD CONSTRAINT unique_constraint UNIQUE (email, username);
+
+--drop not null constraint
+alter table datacollected alter column name drop not null;

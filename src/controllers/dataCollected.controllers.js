@@ -1,4 +1,6 @@
 import pool from '../database/pool';
+import { errorMessage, status, successMessage } from '../helpers/status';
+import { empty } from '../helpers/validations';
 
 
 
@@ -31,7 +33,6 @@ export async function createPoint(req, res) {
         console.log(e)
     }
 }
-
 
 
 export async function getPointsByUserForMap(req, res) {
@@ -83,6 +84,40 @@ export async function createPointByUser(req, res) {
 }
 
 
+export async function createPointByUserALTERNATIVE(req, res) {
+    const {
+        name, ppm, description, lon, lat
+    } = req.body;
+
+    const {
+        id 
+    } = req.user;
+
+    if(empty(name || lon || lat)) {
+        errorMessage.error = 'Name and coordinates are obligatory';
+        return res.status(status.bad).send(errorMessage);
+    }
+
+    const createPointQuery = `INSERT INTO datacollected(usernameid, name, ppm, description, lon, lat) VALUES ($1, $2, $3, $4, $5, $6) returning *`
+    const values = [id, name, ppm, description, lon, lat];
+
+    try {
+        const { rows } = await pool.query(createPointQuery, values);
+        const dbResponse = rows[0];
+        successMessage.data = dbResponse;
+        return res.status(status.created).send(successMessage);
+
+    } catch (error) {
+        if (error.routine === '_bt_check_unique') {
+            errorMessage.error = 'Name of the point introduced is taken already';
+            return res.status(status.conflict).send(errorMessage);
+        }
+        errorMessage.error = 'Unable to create user';
+        return res.status(status.error).send(errorMessage);
+    }
+}
+
+//como no son null ninguno, se pueden dejar sin meter por el formulario, pero si no se meten, se borran esos campos. ¿cómo mantener los datos de los campos que no actualizas?
 export async function updatePointByUser(req, res) {
     const pointid = req.params.id;
     const usernameid = req.params.userid;
@@ -102,6 +137,38 @@ export async function updatePointByUser(req, res) {
     }
 }
 
+//solo se actualiza el campo descripcion, pero querría que cualquiera se pudiese modificar
+export async function updatePointByUserALTERNATIVE(req, res) {
+    const { pointid } = req.params;
+    const { pointdesc } = req.body;
+
+    const { user_id } = req.user;
+
+    if(empty(pointdesc)) {
+        errorMessage.error = 'Description is needed';
+        return res.status(status.bad).send(errorMessage);
+    }
+    const findPointQuery = 'SELECT * FROM datacollected WHERE id = $1';
+    const updatePointQuery = 'UPDATE datacollected SET description = $1 WHERE id = $2 AND usernameid = $3';
+
+    try {
+        const { rows } = await pool.query(findPointQuery, [pointid]);
+        const dbResponse = rows[0];
+        if(!dbResponse) {
+            errorMessage.error = 'Point cannot be found';
+            return res.status(status.notfound).send(errorMessage);
+        }
+        const values = [pointid, pointdesc, user_id]
+        const response = await pool.query(updatePointQuery, values);
+        const dbResult = response.rows[0];
+        successMessage.data = dbResult;
+        return res.status(status.success).send(successMessage)
+        
+    } catch (error) {
+        console.log(error)
+    }
+
+}
 
 export async function deletePointByUser(req, res) {
     const id = req.params.id;
@@ -115,6 +182,28 @@ export async function deletePointByUser(req, res) {
     }
     catch (e) {
         console.log(e)
+    }
+}
+
+export async function deletePointByUserALTERNATIVE(req, res) {
+    const { pointId } = req.params;
+    const { user_id } = req.user;
+
+    const deletePointQuery = 'DELETE FROM datacollected WHERE id = $1 AND usernameid = $2 returning *';
+    try {
+        const { rows } = await pool.query(deletePointQuery, [pointId, user_id]);
+        const dbResponse = rows[0];
+        if(!dbResponse) {
+            errorMessage.error = 'You have no point collected with that id';
+            return res.status(status.notfound).send(errorMessage);
+        }
+        successMessage.data = {};
+        successMessage.data.message = 'Booking deleted successfully';
+        return res.status(status.success).send(successMessage);
+
+    } catch (error) {
+        return res.status(status.error).send(error);
+
     }
 }
 

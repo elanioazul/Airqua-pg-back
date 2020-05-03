@@ -53,17 +53,25 @@ export async function createUser(req, res) {
         const dbResponse = rows[0]
         delete dbResponse.password;
         const token = generateUserToken(dbResponse.email, dbResponse.id, dbResponse.username, dbResponse.initials);
+        successMessage.message = 'created successfully';
         successMessage.data = dbResponse;
         successMessage.data.token = token;
-        return res.status(status.created).send(successMessage).json({
-            message: 'created successfully',
-            body: {
-                user: {email, username, initials}
-            }
-        });
+        return res.status(status.created).send(successMessage)
+        // .json({
+        //     message: 'created successfully',
+        //     body: {
+        //         user: {email, username, initials}
+        //     }
+        // });
     }
-    catch (e) {
-        console.log(`Something went wrong ${e}`)
+    catch (error) {
+        if (error.routine === '_bt_check_unique') {
+            errorMessage.error = 'User with that email already exist';
+            return res.status(status.conflict).send(errorMessage);
+        }
+        console.log(`Something went wrong ${error}`);
+        errorMessage.error = 'Operation was not successful';
+        return res.status(status.error).send(errorMessage);
     }
 
     
@@ -99,7 +107,7 @@ export async function siginUser(req, res) {
         successMessage.data.token= token;
         return res.status(status.success).send(successMessage);
 
-    } catch (e) {
+    } catch (error) {
         errorMessage.error = 'Operation was not successful';
         return res.status(status.error).send(errorMessage);
 
@@ -107,10 +115,34 @@ export async function siginUser(req, res) {
 
 }
 
-export async function updateUser(req, res) {
+//SEARCH BY USERNAME
+export async function searchUsername(req,res) {
+    const { username } = req.params;
+    const searchQuery = 'SELECT * FROM users WHERE username = $1 ORDER BY id DESC';
+    try {
+        const { rows } = await pool.query(searchQuery, [username]);
+        const dbResponse = rows;
+        if(!dbResponse[0]) {
+            errorMessage.error = 'No user with such an username';
+            return res.status(status.notfound).send(errorMessage)
+        }
+        successMessage.data = dbResponse;
+        return res.status(status.success).send(successMessage)
+
+    } catch (error) {
+        errorMessage.error = 'Operation was not sucessful';
+        return res.status(status.error).send(errorMessage)
+    }
+}
+
+//solo funciona si recibe todos los params de params y body. ¿cómo hacer para que actue si falta alguno tbn?
+export async function updateUserTotal(req, res) {
     const id = req.params.id;
     const { email, username, initials, password } = req.body;
-
+    if (!validatePassword(password)) {
+        errorMessage.error = 'Password incorrect. It must be more than five (5) characters';
+        return res.status(status.bad).send(errorMessage);
+    }
     const response = await pool.query('UPDATE users SET email = $1, username = $2, initials = $3, password = $4 WHERE id = $5', [
         email,
         username,
