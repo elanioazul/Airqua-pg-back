@@ -190,3 +190,83 @@ ALTER TABLE users ADD CONSTRAINT unique_constraint UNIQUE (email, username);
 
 --drop not null constraint
 alter table datacollected alter column name drop not null;
+
+
+--quiero crear un campo geom en las tablas estaciones meteo y airqua. Pero meda error que long y lat son char var. 
+airquapg=> ALTER TABLE airstations ADD COLUMN geom geometry(Point, 4326);
+ALTER TABLE
+airquapg=> UPDATE airstations SET geom = ST_SetSRID(ST_MakePoint(longitud, latitud), 4326);
+ERROR:  function st_makepoint(character varying, character varying) does not exist
+LINE 1: UPDATE airstations SET geom = ST_SetSRID(ST_MakePoint(longit...
+
+--cambio el tipo de columna de lon y lat a real para que la función ST_makepoint reciba valores decimales y no character:
+ALTER TABLE airstations
+ALTER COLUMN longitud TYPE real USING longitud::real,
+ALTER COLUMN latitud TYPE real USING latitud::real;
+
+ALTER TABLE meteostations
+ALTER COLUMN longitud TYPE real USING longitud::real,
+ALTER COLUMN latitud TYPE real USING latitud::real;
+
+UPDATE meteostations SET geom = ST_SetSRID(ST_MakePoint(longitud, latitud), 4326);
+
+
+--sacar geoJson a partir del campo geom:
+SELECT json_build_object(
+    'type', 'FeatureCollection',
+    'crs',  'EPSG:4326', 
+    'data', json_agg(
+        json_build_object(
+            'type',       'Feature',
+            'geometry',   ST_AsGeoJSON(geom)::json,
+            'properties', json_build_object(
+                'codigo', codigo,
+                'codigo_cor', codigo_cor,
+                'estacion', estacion,
+                'direccion', direccion,
+                'lon_geogra', lon_geogra,
+                'lat_geogra', lat_geogra,
+                'altitud', altitud,
+                'no2', no2,
+                'so2', so2,
+                'co', co,
+                'pm10', pm10,
+                'pm2_5', pm2_5,
+                'o3', o3,
+                'btx', btx,
+                'hc', hc
+                
+            )
+        )
+    )
+)
+FROM airstations;  
+
+SELECT json_build_object(
+    'type', 'FeatureCollection',
+    'crs',  'EPSG:4326', 
+    'data', json_agg(
+        json_build_object(
+            'type',       'Feature',
+            'geometry',   ST_AsGeoJSON(geom)::json,
+            'properties', json_build_object(
+                'codigo', codigo,
+                'codigo_cor', codigo_cor,
+                'estacion', estacion,
+                'direccion', direccion,
+                'lon_geogra', lon_geogra,
+                'lat_geogra', lat_geogra,
+                'altitud', altitud,
+                'v_viento', v_viento,
+                'dir_viento', dir_viento,
+                'temperatura', temperatura,
+                'hum_rel', hum_rel,
+                'presion', presion,
+                'rad_solar', rad_solar,
+                'precipitacion', precipitacion
+                
+            )
+        )
+    )
+)
+FROM meteostations; 

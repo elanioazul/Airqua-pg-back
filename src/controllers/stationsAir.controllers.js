@@ -5,7 +5,36 @@ import pool from '../database/pool'
 export async function getAirStations(req, res) {
     try {
         const response = await pool.query(
-            'SELECT * FROM airstations'
+            `SELECT json_build_object(
+                'type', 'FeatureCollection',
+                'crs',  'EPSG:4326', 
+                'data', json_agg(
+                    json_build_object(
+                        'type',       'Feature',
+                        'geometry',   ST_AsGeoJSON(geom)::json,
+                        'properties', json_build_object(
+                            -- list of fields
+                            'codigo', codigo,
+                            'codigo_cor', codigo_cor,
+                            'estacion', estacion,
+                            'direccion', direccion,
+                            'lon_geogra', lon_geogra,
+                            'lat_geogra', lat_geogra,
+                            'altitud', altitud,
+                            'no2', no2,
+                            'so2', so2,
+                            'co', co,
+                            'pm10', pm10,
+                            'pm2_5', pm2_5,
+                            'o3', o3,
+                            'btx', btx,
+                            'hc', hc
+                            
+                        )
+                    )
+                )
+            )
+            FROM airstations`
         )
         res.status(200).json(response.rows);
 

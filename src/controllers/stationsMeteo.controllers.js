@@ -5,7 +5,34 @@ import pool from '../database/pool'
 export async function getMeteoStations(req, res) {
     try {
         const response = await pool.query(
-            'SELECT * FROM meteostations'
+            `SELECT json_build_object(
+                'type', 'FeatureCollection',
+                'crs',  'EPSG:4326', 
+                'data', json_agg(
+                    json_build_object(
+                        'type',       'Feature',
+                        'geometry',   ST_AsGeoJSON(geom)::json,
+                        'properties', json_build_object(
+                            'codigo', codigo,
+                            'codigo_cor', codigo_cor,
+                            'estacion', estacion,
+                            'direccion', direccion,
+                            'lon_geogra', lon_geogra,
+                            'lat_geogra', lat_geogra,
+                            'altitud', altitud,
+                            'v_viento', v_viento,
+                            'dir_viento', dir_viento,
+                            'temperatura', temperatura,
+                            'hum_rel', hum_rel,
+                            'presion', presion,
+                            'rad_solar', rad_solar,
+                            'precipitacion', precipitacion
+                            
+                        )
+                    )
+                )
+            )
+            FROM meteostations`
         )
         res.status(200).json(response.rows);
 
