@@ -212,13 +212,12 @@ UPDATE meteostations SET geom = ST_SetSRID(ST_MakePoint(longitud, latitud), 4326
 
 
 --sacar geoJson a partir del campo geom:
+--metodo1
 SELECT json_build_object(
-    'type', 'FeatureCollection',
-    'crs',  'EPSG:4326', 
-    'data', json_agg(
+    'type', 'FeatureCollection', 
+    'features', json_agg(
         json_build_object(
             'type',       'Feature',
-            'geometry',   ST_AsGeoJSON(geom)::json,
             'properties', json_build_object(
                 'codigo', codigo,
                 'codigo_cor', codigo_cor,
@@ -236,19 +235,18 @@ SELECT json_build_object(
                 'btx', btx,
                 'hc', hc
                 
-            )
+            ),
+            'geometry',   ST_AsGeoJSON(geom)::json
         )
     )
-)
+) AS geojson
 FROM airstations;  
 
 SELECT json_build_object(
     'type', 'FeatureCollection',
-    'crs',  'EPSG:4326', 
     'data', json_agg(
         json_build_object(
             'type',       'Feature',
-            'geometry',   ST_AsGeoJSON(geom)::json,
             'properties', json_build_object(
                 'codigo', codigo,
                 'codigo_cor', codigo_cor,
@@ -265,8 +263,26 @@ SELECT json_build_object(
                 'rad_solar', rad_solar,
                 'precipitacion', precipitacion
                 
-            )
+            ),
+            'geometry',   ST_AsGeoJSON(geom)::json
         )
     )
-)
+) AS geojson
 FROM meteostations; 
+
+--sacar geoJson a partir del campo geom:
+--metodo2
+SELECT json_build_object(
+    'type', 'FeatureCollection', 
+    'data', json_agg(ST_AsGeoJSON(geom, 6)::json)
+)
+from airstations;
+
+
+--sacar geoJson a partir del campo geom:
+--metodo3
+SELECT ST_AsGeoJSON(subq.*) AS geojson 
+FROM ( 
+  SELECT ST_Centroid(geom), codigo, codigo_cor, estacion, direccion, lon_geogra, lat_geogra, altitud, no2, so2, co, pm10, pm2_5, o3, btx, hc
+  FROM airstations 
+) AS subq

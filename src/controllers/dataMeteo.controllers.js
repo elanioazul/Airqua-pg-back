@@ -17,3 +17,4 @@ export async function getMeteoDataByStation(req, res) {
         console.log(e)
     }
 }
+

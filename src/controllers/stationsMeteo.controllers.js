@@ -7,11 +7,9 @@ export async function getMeteoStations(req, res) {
         const response = await pool.query(
             `SELECT json_build_object(
                 'type', 'FeatureCollection',
-                'crs',  'EPSG:4326', 
-                'data', json_agg(
+                'features', json_agg(
                     json_build_object(
                         'type',       'Feature',
-                        'geometry',   ST_AsGeoJSON(geom)::json,
                         'properties', json_build_object(
                             'codigo', codigo,
                             'codigo_cor', codigo_cor,
@@ -28,13 +26,14 @@ export async function getMeteoStations(req, res) {
                             'rad_solar', rad_solar,
                             'precipitacion', precipitacion
                             
-                        )
+                        ),
+                        'geometry',   ST_AsGeoJSON(geom)::json
                     )
                 )
-            )
+            ) AS geojson
             FROM meteostations`
         )
-        res.status(200).json(response.rows);
+        res.status(200).json(response.rows[0]);
 
     } catch (e) { 
         console.log(e) 

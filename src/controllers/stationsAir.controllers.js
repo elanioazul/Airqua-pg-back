@@ -6,14 +6,11 @@ export async function getAirStations(req, res) {
     try {
         const response = await pool.query(
             `SELECT json_build_object(
-                'type', 'FeatureCollection',
-                'crs',  'EPSG:4326', 
-                'data', json_agg(
+                'type', 'FeatureCollection', 
+                'features', json_agg(
                     json_build_object(
                         'type',       'Feature',
-                        'geometry',   ST_AsGeoJSON(geom)::json,
                         'properties', json_build_object(
-                            -- list of fields
                             'codigo', codigo,
                             'codigo_cor', codigo_cor,
                             'estacion', estacion,
@@ -30,13 +27,14 @@ export async function getAirStations(req, res) {
                             'btx', btx,
                             'hc', hc
                             
-                        )
+                        ),
+                        'geometry',   ST_AsGeoJSON(geom)::json
                     )
                 )
-            )
+            ) AS geojson
             FROM airstations`
         )
-        res.status(200).json(response.rows);
+        res.status(200).json(response.rows[0]);
 
     } catch (e) { 
         console.log(e) 

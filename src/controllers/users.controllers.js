@@ -51,6 +51,7 @@ export async function createUser(req, res) {
              [email, username, initials, hashedPassword]
         );
         const dbResponse = rows[0]
+        console.log(dbResponse)
         delete dbResponse.password;
         const token = generateUserToken(dbResponse.email, dbResponse.id, dbResponse.username, dbResponse.initials);
         successMessage.message = 'created successfully';
@@ -101,7 +102,7 @@ export async function siginUser(req, res) {
             errorMessage.error = 'Password provided is incorrect';
             return res.status(status.bad).send(errorMessage)
         }
-        const token = generateUserToken(dbResponse.email, dbResponse.id, dbResponse.username, dbResponse.initials);
+        const token = generateUserToken(dbResponse.email, dbResponse.id, dbResponse.username);
         delete dbResponse.password;
         successMessage.data = dbResponse;
         successMessage.data.token= token;
