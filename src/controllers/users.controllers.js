@@ -144,10 +144,11 @@ export async function updateUserTotal(req, res) {
         errorMessage.error = 'Password incorrect. It must be more than five (5) characters';
         return res.status(status.bad).send(errorMessage);
     }
+    const hashedPassword = hashPassword(password);
     const response = await pool.query('UPDATE users SET email = $1, username = $2, password = $3 WHERE id = $4', [
         email,
         username,
-        password,
+        hashedPassword,
         id
     ]).catch( err => { console.error(err) } );
     console.log(response);
