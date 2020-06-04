@@ -139,15 +139,14 @@ export async function searchUsername(req,res) {
 //solo funciona si recibe todos los params de params y body. ¿cómo hacer para que actue si falta alguno tbn?
 export async function updateUserTotal(req, res) {
     const id = req.params.id;
-    const { email, username, initials, password } = req.body;
+    const { email, username, password } = req.body;
     if (!validatePassword(password)) {
         errorMessage.error = 'Password incorrect. It must be more than five (5) characters';
         return res.status(status.bad).send(errorMessage);
     }
-    const response = await pool.query('UPDATE users SET email = $1, username = $2, initials = $3, password = $4 WHERE id = $5', [
+    const response = await pool.query('UPDATE users SET email = $1, username = $2, password = $3 WHERE id = $4', [
         email,
         username,
-        initials,
         password,
         id
     ]).catch( err => { console.error(err) } );
@@ -155,7 +154,7 @@ export async function updateUserTotal(req, res) {
     res.json({
         message: 'updated successfully',
         body: {
-            user: {username, email, initials}
+            user: {username, email}
         }
     })
 }
