@@ -4,7 +4,7 @@ const router = Router();
 import { getAirDataByStation } from '../controllers/dataAir.controllers';
 
 // /api/v1/airdata
-router.get('/station/:stationid', getAirDataByStation);
+router.post('/station/:stationid', getAirDataByStation);
 
 
 

@@ -4,7 +4,7 @@ const router = Router();
 import {getMeteoDataByStation } from '../controllers/dataMeteo.controllers';
 
 // /api/v1/airdata
-router.get('/station/:stationid', getMeteoDataByStation);
+router.post('/station/:stationid', getMeteoDataByStation);
 
 
 
