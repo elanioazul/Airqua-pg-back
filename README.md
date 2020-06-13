@@ -1,5 +1,5 @@
 # Technologies
-Express, Postgre & Nodejs REST API
+Express, Postgis & Nodejs REST API
 
 # Data
 https://datos.madrid.es/sites/v/index.jsp?vgnextoid=aecb88a7e2b73410VgnVCM2000000c205a0aRCRD&vgnextchannel=374512b9ace9f310VgnVCM100000171f5a0aRCRD
